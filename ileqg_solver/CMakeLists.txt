@@ -58,16 +58,14 @@ set(S_FILES  ${SRC_DIR}/mpc_point_mass_node.cpp
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(lwr_mpc_examples ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(mpc_point_mass_node ${S_FILES} ${H_FILES})
 target_link_libraries(mpc_point_mass_node  ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(lwr_mpc_examples_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(lwr_mpc_examples_node
+# target_link_libraries(mpc_point_mass_node
 #   ${catkin_LIBRARIES}
 # )

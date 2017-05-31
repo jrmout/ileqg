@@ -40,12 +40,6 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>    robot_motion_generation     </build_depend> 
-  <run_depend>      robot_motion_generation     </run_depend>
-
-  <build_depend>    lwr_controllers     </build_depend>
-  <run_depend>      lwr_controllers     </run_depend>
-
   <build_depend>    tf                  </build_depend>
   <run_depend>      tf                  </run_depend>
 
