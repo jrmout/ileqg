@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+        <arg name="IS_SIMULATION"  default="true" />
+
+        <param name="is_simulation" type="boolean" value="$(arg IS_SIMULATION)"/>
+        <node name="lwr_mpc_linear" pkg="mpc_ds_control" type="lwr_mpc_linear_node" required="true" output="screen" >
+<!--                <param name="action_server_name"        value="$(arg action_server_name)"/> -->
+        </node>
+        <node name="interactive_target" pkg="mpc_ds_control" type="interactive_target.py" required="true" output="screen" >
+<!--                <param name="action_server_name"        value="$(arg action_server_name)"/> -->
+        </node>
+</launch>
+
