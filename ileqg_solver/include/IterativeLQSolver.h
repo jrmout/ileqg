@@ -1,16 +1,13 @@
 #ifndef ITERATIVELQSOLVER_H_
 #define ITERATIVELQSOLVER_H_
 
+#include "types.h"
 #include "LQSolver.h"
 #include "OCProblemFH.h"
 #include <eigen3/Eigen/Dense>
 #include <memory>
 
-namespace motion{
-
-    typedef Eigen::VectorXd Vector;
-    typedef Eigen::MatrixXd Matrix;
-
+namespace ileqg{
 
 struct IterativeLQSolverParams{
     // Line search parameters

@@ -2,7 +2,7 @@
 #include <eigen3/Eigen/Eigenvalues>
 #include <iostream>
 
-namespace motion{
+namespace ileqg{
 
 IterativeLQSolver::IterativeLQSolver(int time_horizon, int x_di, int u_di, double sampling_time, std::shared_ptr<OCProblemFH> ocProb, const IterativeLQSolverParams & sparams, const Vector & x_initial, const LQSolution & sol_ini) :
     lqprob(time_horizon, x_dim, u_dim), nominal(time_horizon, x_dim, u_dim),

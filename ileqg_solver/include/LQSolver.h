@@ -1,14 +1,11 @@
 #ifndef LQSOLVER_H_
 #define LQSOLVER_H_
 
-
+#include "types.h"
 #include <eigen3/Eigen/Dense>
 #include <iostream>
 
-namespace motion{
-
-    typedef Eigen::VectorXd Vector;
-    typedef Eigen::MatrixXd Matrix;
+namespace ileqg {
 
 struct LQProblem {
     // Initial state

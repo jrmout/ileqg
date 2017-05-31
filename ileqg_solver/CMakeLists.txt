@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ileqg)
+project(ileqg_solver)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -10,10 +10,7 @@ find_package(catkin REQUIRED roscpp
 cmake_modules
 message_runtime
 tf
-lwr_controllers
-robot_motion_generation
-lwr_fri
-kdl_parser)
+ileqg_msgs)
 
 set(CMAKE_CXX_FLAGS "-O2 -O3 -std=c++11 -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-reorder")
 
@@ -30,8 +27,8 @@ find_package(Eigen REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES mpc_ds_control
-  CATKIN_DEPENDS tf lwr_controllers message_runtime lwr_fri robot_motion_generation
+  LIBRARIES ileqg_solver
+  CATKIN_DEPENDS message_runtime
   DEPENDS Eigen
 )
 
@@ -45,6 +42,7 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 
 set(H_FILES ${INCLUDE_DIR}/PointMassLinear.h
@@ -53,7 +51,7 @@ set(H_FILES ${INCLUDE_DIR}/PointMassLinear.h
   ${INCLUDE_DIR}/IterativeLQSolver.h
 )
 
-set(S_FILES  ${SRC_DIR}/lwr_mpc_linear_node.cpp
+set(S_FILES  ${SRC_DIR}/mpc_point_mass_node.cpp
   ${SRC_DIR}/IterativeLQSolver.cpp
 )
 
@@ -62,8 +60,8 @@ set(S_FILES  ${SRC_DIR}/lwr_mpc_linear_node.cpp
 ## either from message generation or dynamic reconfigure
 # add_dependencies(lwr_mpc_examples ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(lwr_mpc_linear_node ${S_FILES} ${H_FILES})
-target_link_libraries(lwr_mpc_linear_node  ${catkin_LIBRARIES})
+add_executable(mpc_point_mass_node ${S_FILES} ${H_FILES})
+target_link_libraries(mpc_point_mass_node  ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

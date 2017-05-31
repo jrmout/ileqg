@@ -8,14 +8,13 @@
  * Final_cost = x^T Q_track_f x
 */
 
+#include "types.h"
 #include <eigen3/Eigen/Dense>
 #include <OCProblemFH.h>
 
+namespace ileqg {
 
-typedef Eigen::VectorXd Vector;
-typedef Eigen::MatrixXd Matrix;
-
-class PointMassLinear: public motion::OCProblemFH
+class PointMassLinear: public ileqg::OCProblemFH
 {
 private :
     Matrix A_, B_, A_d_, Q_, Q_f_, R_;                          // State and cost matrices of the full compound state  x = [x_rob ; (x_d - x_rob)]
@@ -100,9 +99,8 @@ public :
         q_0 = finalCost(x,u);
         return q_0;
     }
-
-
 };
 
+}
 
 #endif /* POINTMASSLINEAR_H_ */

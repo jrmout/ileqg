@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>ileqg</name>
+  <name>ileqg_solver</name>
   <version>0.0.0</version>
-  <description>iLEQG for nonlinear nonquadratic systems</description>
+  <description>iLEQG solver for nonlinear nonquadratic systems</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

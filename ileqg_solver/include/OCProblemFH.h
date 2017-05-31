@@ -8,12 +8,10 @@
  * - instantaneous cost function (including 2nd order derivatives)
 */
 
+#include "types.h"
 #include <eigen3/Eigen/Dense>
 
-namespace motion{
-
-    typedef Eigen::VectorXd Vector;
-    typedef Eigen::MatrixXd Matrix;
+namespace ileqg {
 
 class OCProblemFH
 {
