@@ -6,15 +6,14 @@ set(CMAKE_BUILD_TYPE Release)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp
-cmake_modules
-message_runtime
+find_package(catkin REQUIRED COMPONENTS
+roscpp
 tf
 ileqg_msgs)
 
 set(CMAKE_CXX_FLAGS "-O2 -O3 -std=c++11 -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-reorder")
 
-find_package(Eigen REQUIRED)
+#find_package(Eigen REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -26,10 +25,10 @@ find_package(Eigen REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-  LIBRARIES ileqg_solver
-  CATKIN_DEPENDS message_runtime
-  DEPENDS Eigen
+  INCLUDE_DIRS include
+#  LIBRARIES ileqg_solver
+  CATKIN_DEPENDS ileqg_msgs
+#  DEPENDS Eigen
 )
 
 ###########
