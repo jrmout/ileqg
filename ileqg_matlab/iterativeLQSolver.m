@@ -12,7 +12,6 @@ function [x, u, L, cost, epsilon] = iterativeLQSolver(fnDyn, fnCost, fnOpt, dt, 
 %  Medina, J.R. and Hirche, S. (2015) Uncertainty-dependent Locally-Optimal 
 % Control for Robot Control Considering High-order Cost Statistics
 %
-%
 % [x_, u_, L, cost ] = 
 %       iterativeLQSolver(fnDyn, fnCost, dt, n, x0, u0, varargin)
 %
@@ -33,8 +32,8 @@ function [x, u, L, cost, epsilon] = iterativeLQSolver(fnDyn, fnCost, fnOpt, dt, 
 %           [l, l_x, l_xx, l_u, l_uu, l_ux] = fnCost(x, u, t)
 %          where l is the cost, and l_x etc. are its partial derivatives
 %          t is the current time step; t=NaN means final cost
-% fnOpt- handle of optimizer function. In our case either an cost
-%        cumulant kcc or a risk-sensitive leqr solver. It takes as an input
+% fnOpt- handle of linear quadratic solver. We provide a cost
+%        cumulant (kcc) or a risk-sensitive leqr solver. It takes as an input
 %        an lqProb structure.
 % dt    - time step for discrete-time simulation
 % n     - number of time steps
@@ -55,16 +54,14 @@ function [x, u, L, cost, epsilon] = iterativeLQSolver(fnDyn, fnCost, fnOpt, dt, 
 
 global flgFix;
 
-%---------------------- user-adjustable parameters ------------------------
-
+%---------------------- global parameters ---------------------------------
 epsilonMin = 1e-10;       % exit if lambda exceeds threshold
 relConverge = 1e-5;    % exit if relative improvement below threshold
 flgPrint = 1;           % show cost- 0:never, 1:every iter, 2:final
 maxValue = 1E+15;       % upper bound on states and costs (Inf: none)
 epsilonInit = 1;
 
-
-%---------------------------------------------- get optional arguments
+%---------------------- get optional arguments ----------------------------
 if nargin>=8
     uMin = varargin{1};
 else
@@ -91,9 +88,7 @@ end
 szX = size(x0, 1);          % size of state vector
 szU = size(u0, 1);          % size of control vector
 
-
-
-%% -------------------- INITIALIZATION
+%% -------------------- INITIALIZATION ------------------------------------
 
 L = zeros(szU, szX, n-1);   % init feedback gains
 
@@ -110,7 +105,6 @@ if isscalar(uMax)
     uMax = repmat(uMax, [szU,1]);
 end
 
-
 flgFix = 0;                 % clear large-fix global flag
 
 % In the following lqProb is a cell with :
@@ -119,34 +113,37 @@ flgFix = 0;                 % clear large-fix global flag
 % 3- q                     Linear State Weighting matrix - n x T
 % 4- r                     Linear Control input weighting - m x T-1
 % 5- q0                    Constant cost term - T
-% 6- A                     System matrix - n x n x T , where n is the dimension of the state
-% 7- B                     Control matrix - n x m x T , where m is the control input dimension
+% 6- A                     System matrix - n x n x T , where n = dim(state)
+% 7- B                     Control matrix - n x m x T , where m = dim(control)
 % 8- Gamma                 Control noise matrix - n x qs x S noise inputs
 % 9- Sigma                 covariance matrix - qs x qs x T x S
 % 10- x0                    Initial state
-% (Optional parameters for iterative solution only -> Problem defined on deviations)
+% (Optional parameters for iterative solution only [defined on deviations])
 % 11- u_nom                 Nominal trajectory m x T-1
 % 12- uMin                  Min input m x 1
 % 13- uMax                  Max input m x 1
 
 
 %% ------------------ 2 STEP - OPTIMIZATION LOOP    1st) FF only   2nd) FF + FB
+% This is optional and is only useful if you don't have a global planner to
+% compute an initial solution for the locally optimal solver.
 for m = 1:2
-    
-    %------ STEP 1: Given initial nominal u, simulate dynamics and linearize/quadratize the problem around 
-    %-------------  the resulting trajectory to get expected cost, trajectory and local LQ problem
+    %------ STEP 1: Given initial nominal u, simulate dynamics and 
+    %------         linearize/quadratize the problem around the resulting 
+    %------         trajectoryto get expected cost, trajectory and local 
+    %------         LQ problem
     
     [x, cost, lqProb] = simulate(fnDyn, fnCost, fnOpt, dt, x0, u, L, maxValue);
     
     epsilon = epsilonInit;
     finished = false;
     
-
     for iter = 1:maxIter 
     %% MAIN ITERATION
-
-        %------ STEP 2: compute optimal control law and cost -> Solve kcc problem
-        % Set constraints and nominal trajectory of the lq problem for optimal solution
+        %------ STEP 2: compute optimal control law and cost -> Solve kcc 
+        %------         problem
+        %------         Set constraints and nominal trajectory of the lq 
+        %------         problem for optimal solution.
         lqProb{11} = u;
         lqProb{12} = uMin;
         lqProb{13} = uMax;
@@ -154,10 +151,10 @@ for m = 1:2
         % Solve local LQ problem and get optimal control deviations l and L
         [l, L, ~, ~, ~] = fnOpt(lqProb);
 
-
         while 1
         %% LINE SEARCH
-            %------ STEP 3: Obtain new control sequence considering control input limits and line search parameter epsilon
+            %------ STEP 3: Obtain new control sequence considering control
+            %------         input limits and line search parameter epsilon
             dx = zeros(szX,1);
             unew = zeros(szU, n-1);
             A = lqProb{6};
@@ -169,47 +166,45 @@ for m = 1:2
                 unew(:,k) = u(:,k) + du;
             end
 
-
-            
-            %----- Simulate dynamics and linearize/quadratize the problem around resulting trajectory
-            %----- to approximate cost (in the first run only FF)
+            %----- Simulate dynamics and linearize/quadratize the problem 
+            %----- around resulting trajectory to approximate cost 
+            %----- (in the first run only FF)
             if m == 1
                 % Consider only Feedforward component unew
-                [xnew, costtogonew, new_lqProb] = simulate(fnDyn, fnCost, fnOpt, dt, x0, unew, zeros(size(L)), maxValue);
+                [xnew, costtogonew, new_lqProb] = ...
+                    simulate(fnDyn, fnCost, fnOpt, dt, x0, unew, ...
+                             zeros(size(L)), maxValue);
             else
                 % Consider also Feedback unew + L \delta x
-                [xnew, costtogonew, new_lqProb] = simulate(fnDyn, fnCost, fnOpt, dt, x0, unew, L, maxValue);
+                [xnew, costtogonew, new_lqProb] = ...
+                    simulate(fnDyn, fnCost, fnOpt, dt, x0, unew, L, maxValue);
             end
             costnew = costtogonew(1);
 
-            
-            
             % Plot the current solution
             if (doPlot)
                 fnPlot(xnew, unew, L);
             end
-            % Print
-            if flgPrint==1
-                fprintf('Iteration = %d;  Cost = %.4f; MinCost = %.4f; logEps = %.1f\n', ...
-                    iter, costnew, cost, log10(epsilon) );
-            end
-
-
             
-            %------ STEP 4: Check for acceptance and update nominal trajectory and LQ problem
+            % Print info
+            if flgPrint==1
+                fprintf(['Iter = %d; Cost = %.4f; MinCost = %.4f;' ...
+                         'logEps = ...%.1f\n'], ...
+                         iter, costnew, cost, log10(epsilon) );
+            end
+            
+            %------ STEP 4: Check for convergence and update nominal 
+            %------         trajectory and LQ problem
             if (costnew< cost) && (~isinf(costnew))
-
                 % Set new trajectory
                 u = unew;
                 x = xnew;
                 
-                % Set the previous Linearization/quadratization as the current one
+                % Set the previous Linearization/quadratization as current
                 lqProb = new_lqProb;
                 
-
                 % Reset epsilon for the next iteration
                 epsilon = epsilonInit;
-
                 
                 % Check for convergence
                 if iter>1 && ((abs(costnew - cost)/abs(costnew)) < relConverge)
@@ -229,7 +224,6 @@ for m = 1:2
             else
                 % Decrease epsilon for line search
                 epsilon = epsilon / 2;
-
 
                 % Check for 'convergence'
                 if epsilon<epsilonMin
@@ -254,11 +248,10 @@ end
 
 end
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Simulate controlled system, compute trajectory and cost
-function [x, cost, lqProb] = simulate(fnDyn, fnCost, fnOpt, dt, x0, u, L, maxValue)
+%  Simulate system, compute trajectory and cost
+function [x, cost, lqProb] = simulate(fnDyn, fnCost, fnOpt, ...
+                                      dt, x0, u, L, maxValue)
     % get sizes
     szX = size(x0,1);
     szU = size(u,1);
@@ -276,7 +269,7 @@ function [x, cost, lqProb] = simulate(fnDyn, fnCost, fnOpt, dt, x0, u, L, maxVal
     A = zeros(szX,szX,n);
     B = zeros(szX,szU,n);
 
-    % run simulation with substeps and approximate dynamics and cost 
+    % Simulation with Euler and approximate dynamics and cost 
     % along new trajectory
     for k = 1:n-1
         [xdot, f_x, f_u, Gamma_k, Sigma_k] = fnDyn(x(:,k), u(:,k));

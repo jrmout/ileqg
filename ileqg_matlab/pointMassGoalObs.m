@@ -1,10 +1,9 @@
 close all;
+startup;
 
-% Optimization parameters
+%% Optimization parameters
 T = 50;
 dt = 0.01;
-theta = 1;
-x0 = [0 0 0 0 0.1 0.1 1 -0.5]';
 u0 = zeros(2,1);
 max_iter = 1000;
 uMin = -Inf;
@@ -18,33 +17,66 @@ x0 = [x_rob ; (x_goal - x_rob) ; (x_obs - x_rob)];
 gamma_neg = 4;
 gamma_pos = 5;
 
-% Define LQ solvers
+% Dynamics
+dynamics_function = @pointMass_dyngoalobs_dyn;
+
+% Cost
+cost_function = @pointMass_dyngoalobs_cost;
+
+% Plot (during optimization)
+plot_function = @pointMass_dyngoalobs_plot;
+
+
+% LQ solvers
 ExpectedCost = @(lqProb, varargin)kcc_multi(1, lqProb, varargin{:});
-kccOptMeanNVar = @(lqProb, varargin)kcc_multi([1 -(gamma_neg^2)/2], lqProb, varargin{:});
-kccOptMeanPVar = @(lqProb, varargin)kcc_multi([1 gamma_pos^2 /2], lqProb, varargin{:});
-kccOptMeanNSkew = @(lqProb, varargin)kcc_multi([1 0 -(gamma_neg^3) / 6], lqProb, varargin{:});
-kccOptMeanPSkew = @(lqProb, varargin)kcc_multi([1 0 gamma_pos^3 / 6], lqProb, varargin{:});
-kccOptMeanNKurt = @(lqProb, varargin)kcc_multi([1 0 0 -(gamma_neg^4) / 24], lqProb, varargin{:});
-kccOptMeanPKurt = @(lqProb, varargin)kcc_multi([1 0 0 gamma_pos^4 / 24], lqProb, varargin{:});
-kccOptMeanPVarPKur = @(lqProb, varargin)kcc_multi([1 0.0001 0.0001], lqProb, varargin{:});
-kccOptMeanNVarPKur = @(lqProb, varargin)kcc_multi([1 -0.0001 0.00001], lqProb, varargin{:});
+kccOptMeanNVar = @(lqProb, varargin)kcc_multi(...
+                                [1 -(gamma_neg^2)/2], lqProb, varargin{:});
+kccOptMeanPVar = @(lqProb, varargin)kcc_multi(...
+                                [1 gamma_pos^2 /2], lqProb, varargin{:});
+kccOptMeanNThird = @(lqProb, varargin)kcc_multi(...
+                                [1 0 -(gamma_neg^3) / 6], lqProb, varargin{:});
+kccOptMeanPThird = @(lqProb, varargin)kcc_multi(...
+                                [1 0 gamma_pos^3 / 6], lqProb, varargin{:});
+kccOptMeanNFourth = @(lqProb, varargin)kcc_multi(...
+                                [1 0 0 -(gamma_neg^4) / 24], lqProb, varargin{:});
+kccOptMeanPFourth = @(lqProb, varargin)kcc_multi(...
+                                [1 0 0 gamma_pos^4 / 24], lqProb, varargin{:});
 riskAverse = @(lqProb, varargin)leqr_multi([4], lqProb, varargin{:});
 riskSeeking = @(lqProb, varargin)leqr_multi([-50], lqProb, varargin{:});
 
-% Solve iteratively
- [x_exp, u_exp, L_exp, cost_exp, eps_exp] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, ExpectedCost, dt, T, x0, u0, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_mvn, u_mvn, L_mvn, cost_mvn, eps_mvn] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, kccOptMeanNVar, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_mvp, u_mvp, L_mvp, cost_mvp, eps_mvp] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, kccOptMeanPVar, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_msn, u_msn, L_msn, cost_msn, eps_msn] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, kccOptMeanNSkew, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_msp, u_msp, L_msp, cost_msp, eps_msp] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, kccOptMeanPSkew, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_mkn, u_mkn, L_mkn, cost_mkn, eps_mkn] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, kccOptMeanNKurt, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_mkp, u_mkp, L_mkp, cost_mkp, eps_mkp] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, kccOptMeanPKurt, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_ra, u_ra, L_ra, cost_ra, eps_ra] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, riskAverse, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
- [x_rs, u_rs, L_rs, cost_rs, eps_rs] = iterativeLQSolver(@pointMass_dyngoalobs_dyn, @pointMass_dyngoalobs_cost, riskSeeking, dt, T, x0, u_exp, uMin, uMax, max_iter, @pointMass_dyngoalobs_plot);
+%% Solve iteratively
+ [x_exp, u_exp, L_exp, cost_exp, eps_exp] = ...
+     iterativeLQSolver(dynamics_function, cost_function, ExpectedCost, ...
+                       dt, T, x0, u0, uMin, uMax, max_iter, plot_function);
+ [x_mvn, u_mvn, L_mvn, cost_mvn, eps_mvn] = ...
+     iterativeLQSolver(dynamics_function, cost_function, kccOptMeanNVar, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_mvp, u_mvp, L_mvp, cost_mvp, eps_mvp] = ...
+     iterativeLQSolver(dynamics_function, cost_function, kccOptMeanPVar, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_msn, u_msn, L_msn, cost_msn, eps_msn] = ...
+     iterativeLQSolver(dynamics_function, cost_function, kccOptMeanNThird, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_msp, u_msp, L_msp, cost_msp, eps_msp] = ...
+     iterativeLQSolver(dynamics_function, cost_function, kccOptMeanPThird, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_mkn, u_mkn, L_mkn, cost_mkn, eps_mkn] = ...
+     iterativeLQSolver(dynamics_function, cost_function, kccOptMeanNFourth, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_mkp, u_mkp, L_mkp, cost_mkp, eps_mkp] = ...
+     iterativeLQSolver(dynamics_function, cost_function, kccOptMeanPFourth, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_ra, u_ra, L_ra, cost_ra, eps_ra] = ...
+     iterativeLQSolver(dynamics_function, cost_function, riskAverse, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
+ [x_rs, u_rs, L_rs, cost_rs, eps_rs] = ...
+     iterativeLQSolver(dynamics_function, cost_function, riskSeeking, ...
+                       dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
 
+%% Simulate solutions and get statistics
 
+                   
 %% PLOT
-
 xmin = -0.15;
 xmax = 0.6;
 ymin = -0.275;

@@ -27,7 +27,6 @@ Gamma = lqProbInf{6};
 Sigma = lqProbInf{7};
 
 n = size(A, 1);
-m = size(B, 2);
 S = size(theta,1);
 
 %Cost-to-go linear quadratic weightings and constant term

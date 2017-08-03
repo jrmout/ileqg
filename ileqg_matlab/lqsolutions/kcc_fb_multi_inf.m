@@ -39,7 +39,7 @@ W(:,:,1,:) = repmat(Q, [1 1 S]);
 
 W_s_sum_prev = -1*eye(n);
 
-threshold = 0.000001;
+threshold = 0.000001; % For convergence
 
 
 %% SOLUTION

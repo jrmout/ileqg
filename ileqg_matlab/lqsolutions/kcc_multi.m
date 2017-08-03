@@ -1,5 +1,4 @@
 function [l, L, cost, x, u, cumulants] = kcc_multi(gammas, lqProb, varargin)
-
 % -- INPUTS
 % LqProb is a cell with :
 % - Q                     Quadratic State Weighting matrix - n x n x T
@@ -7,9 +6,9 @@ function [l, L, cost, x, u, cumulants] = kcc_multi(gammas, lqProb, varargin)
 % - q                     Linear State Weighting matrix - n x T
 % - r                     Linear Control input weighting - m x T-1
 % - q0                    Constant cost term - T
-% - A                     System matrix - n x n x T , where n is the dimension of the state
-% - B                     Control matrix - n x m x T , where m is the control input dimension
-% - Gamma                 Control noise matrix matrix elements - n x qs x S noise inputs
+% - A                     System matrix - n x n x T , where n = dim(state)
+% - B                     Control matrix - n x m x T , where m = dim(control)
+% - Gamma                 Control noise matrix - n x qs x S noise inputs
 % - Sigma                 covariance matrix - qs x qs x T x S
 % - x0                    Initial state
 % - (Optional parameters for iterative solution -> Problem defined on deviations)
@@ -24,7 +23,7 @@ function [l, L, cost, x, u, cumulants] = kcc_multi(gammas, lqProb, varargin)
 % -- OUTPUTS
 % l                     Optimal feedforward control component - m x T-1
 % L                     Optimal feedback control component  - m x n x T-1
-% cost                  cost-to-go of the LEQ problem for initial state x0 where u = l + L * x
+% cost                  cost-to-go of SOC problem where u = l + L * x
 % x                     simulated trajectory  - n x T
 % u                     simulated control input u = l + L * x
 
@@ -59,7 +58,7 @@ else
 end
 
 compute_opt_control = true;
-if size(varargin,2)>1,
+if size(varargin,2)>1
     compute_opt_control = false;
     l = varargin{1};
     L = varargin{2};
@@ -94,7 +93,8 @@ for k = T-1:-1:1
             W_s(:,:,j,k+1,s) = W(:,:,j,k+1,s);
             w_s(:,j,k+1,s) = w(:,j,k+1,s);
             w0_s(j,k+1,s) = w0(j,k+1,s);
-            H_s(:,:,j,k,s) = (1/2) * j * W(:,:,j,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) * Gamma(:,:,k,s)';
+            H_s(:,:,j,k,s) = (1/2) * j * W(:,:,j,k+1,s) * Gamma(:,:,k,s) ...
+                                          * Sigma(:,:,k,s) * Gamma(:,:,k,s)';
 
             % Higher order statistics at time k for uncertainty source s
             if j > 1
@@ -151,7 +151,7 @@ for k = T-1:-1:1
                        L(:,:,k)'*H*L(:,:,k) + L(:,:,k)'*G + G'*L(:,:,k);
                 w(:,j,k,s) = q(:,k) + A(:,:,k)'*w_s(:,j,k+1,s) + ...
                        L(:,:,k)'*H*l(:,k) + L(:,:,k)'*g + G'*l(:,k);
-                w0(j,k,s) = q0(k) + w0_s(j,k+1,s) + l(:,k)'*H*l(:,k)/2 + l(:,k)'*g;% + trace(H_s(:,:,j,k,s));
+                w0(j,k,s) = q0(k) + w0_s(j,k+1,s) + l(:,k)'*H*l(:,k)/2 + l(:,k)'*g;
                 
             else % Update Higher order cumulants
                 
@@ -197,7 +197,6 @@ if overflow
 end
 
 end
-
 
 % From Li,Todorov 2005
 function [l,L] = uOptimal(g, G, H, u, uMin, uMax)

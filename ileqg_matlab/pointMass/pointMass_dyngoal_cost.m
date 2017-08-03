@@ -4,9 +4,6 @@ function [ l, l_x, l_xx, l_u, l_uu, l_ux ] = pointMass_dyngoal_cost( x, u, t)
 sx = length(x);
 su = length(u);
 
-
-
-
 Q_final = zeros(sx);
 
 Q_final(5,5) = 1;
