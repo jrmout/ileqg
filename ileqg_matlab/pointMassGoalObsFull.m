@@ -60,7 +60,7 @@ kccOptMeanNVarPVar = @(lqProb, varargin)kcc_multi([1 gamma_pos^2 ; 1 -(gamma_neg
                       max_iter, plotWithObstacles);
 
 %% Simulate solutions and get statistics
-n_sims = 500;
+n_sims = 75;
 idx_rob = 1;
 idx_des = 5;
 idx_obs = 9;
@@ -101,12 +101,12 @@ color_goal = [[166,206,227]./255 transparency];
 color_sobs =  [[253,191,111]./255 transparency];
 
 fig_pointmass_full  = figure('units','normalized', ...
-                             'outerposition',[0 0 0.25 0.7]);
+                             'outerposition',[0 0 0.28 0.8]);
 
 ax1 = axes('Parent',fig_pointmass_full, ...
-    'Position',[0.1357340720 0.5571820677 0.8407202216 0.445304436],...
+    'Position',[0.1357340720 0.5871820677 0.8407202216 0.425304436],...
     'PlotBoxAspectRatio',[1.33333333333333 1 1.66666666666667],...
-    'FontSize',26,...
+    'FontSize',22,...
     'DataAspectRatio',[1 1 1]);
 plot_n_simulations_idx(x_trajs_exp, idx_des, idx_rob, color_goal);
 plot_n_simulations_idx(x_trajs_exp, idx_obs, idx_rob, color_obs);
@@ -122,12 +122,13 @@ box(ax1, 'on');
 grid(ax1, 'on');
 xlabel(ax1, 'ax1');
 ylabel(ax1, 'ay1');
+title('t1');
 
 
 ax2 = axes('Parent',fig_pointmass_full, ...
-           'Position',[0.13573407 0.051235132 0.84072022 0.44530443],...
+           'Position',[0.13573407 0.061235132 0.84072022 0.42530443],...
            'PlotBoxAspectRatio',[1.33333333333333 1 1.66666666666667],...
-           'FontSize',26,...
+           'FontSize',22,...
            'DataAspectRatio',[1 1 1]);
 
 plot_n_simulations_idx(x_trajs_mvnp, idx_des, idx_rob, color_goal);
@@ -144,6 +145,7 @@ box(ax2, 'on');
 grid(ax2, 'on');
 xlabel(ax2, 'ax2');
 ylabel(ax2, 'ay2');
+title('t2');
 
 goal = findobj('Tag','goal');
 obs = findobj('Tag','dynamic obstacle');
@@ -156,7 +158,7 @@ legend1 = legend([robot(1) goal(1) obs(1) static_obs(1)], ...
                  {'robot','goal', 'dynamicobstacle', 'staticobstacle'});
 set(legend1,'Location','SouthWest','FontSize',18);
 
-file = '../../repositories/dhri/drafts/onILEQR/figures/simulation_pointMassFull.eps';
+file = '../../../repositories/dhri/drafts/onILEQR/figures/simulation_pointMassFull.eps';
 set(fig_pointmass_full,'PaperPositionMode','auto');
 iptsetpref('ImshowBorder','tight');
 print(fig_pointmass_full, '-depsc','-painters', file);

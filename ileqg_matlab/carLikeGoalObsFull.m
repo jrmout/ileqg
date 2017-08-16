@@ -63,7 +63,7 @@ riskSeekingAverse = ...
 
 
 %% Simulations
-n_sims = 1000;
+n_sims = 100;
 idx_rob = 1;
 idx_des = 6;
 idx_obs = 11;
@@ -96,10 +96,10 @@ rob_size = 0.05;
 xmin = -0.1;
 xmax = 0.9;
 ymin = -0.1;
-ymax = 0.8;
+ymax = 0.5;
 
 fig_pointmass_full  = figure('units','normalized', ...
-                             'outerposition',[0 0 0.25 0.75]);
+                             'outerposition',[0 0 0.25 0.65]);
 
 ax1 = axes('Parent',fig_pointmass_full, ...
     'Position',[0.13573407 0.55718206 0.8407202216 0.43950701],...
@@ -119,10 +119,11 @@ xlabel(ax1, 'ax1');
 ylabel(ax1, 'ay1');
 set(ax1,'YTick',[0,0.2,0.4,0.6]);
 set(ax1,'XTick',[0,0.2,0.4,0.6,0.8]);
+title('t1');
 
 
 ax2 = axes('Parent',fig_pointmass_full, ...
-    'Position',[0.13573407202 0.051235132662 0.84072022160 0.44530443808],...
+    'Position',[0.13573407202 0.011235132662 0.84072022160 0.44530443808],...
     'PlotBoxAspectRatio',[1.33333333333333 1 1.66666666666667],...
     'FontSize',22,...
     'DataAspectRatio',[1 1 1]);
@@ -140,6 +141,7 @@ xlabel(ax2, 'ax2');
 ylabel(ax2, 'ay2');
 set(ax2,'YTick',[0,0.2,0.4,0.6]);
 set(ax2,'XTick',[0,0.2,0.4,0.6,0.8]);
+title('t2');
 
 goal = findobj('Tag','goal');
 obs = findobj('Tag','dynamic obstacle');
@@ -148,9 +150,9 @@ static_obs = findobj('Tag','static obstacle');
 
 legend1 = legend([robot(1) goal(1) obs(1) static_obs(1)], ...
                  {'robot','goal', 'dynamicobstacle',  'staticobstaclesssss'});
-set(legend1,'Location','NorthEast','FontSize',14);
+set(legend1,'Location','NorthWest','FontSize',14);
 
-file = '../../repositories/dhri/drafts/onILEQR/figures/simulation_carLikeFull.eps';
+file = '../../../repositories/dhri/drafts/onILEQR/figures/simulation_carLikeFull.eps';
 set(fig_pointmass_full,'PaperPositionMode','auto');
 iptsetpref('ImshowBorder','tight');
 print(fig_pointmass_full, '-depsc','-painters', file);

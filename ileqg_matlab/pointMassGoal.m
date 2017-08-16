@@ -11,7 +11,7 @@ max_iter = 1000;
 uMin = -Inf;
 uMax = Inf;
 
-gamma = 9;
+gamma = 12;
 
 % Dynamics
 dynamics_function = @pointMass_dyngoal_dyn;
@@ -78,7 +78,8 @@ riskSeeking = @(lqProb, varargin)leqr_multi([-gamma], lqProb, varargin{:});
                    dt, T, x0, u_exp, uMin, uMax, max_iter, plot_function);
 
 %% Simulations
-n_sims = 500;
+%n_sims = 10000; % for stats
+n_sims = 60; % For fig
 idx_rob = 1;
 idx_des = 5;
 
@@ -298,37 +299,37 @@ iptsetpref('ImshowBorder','tight');
 print(fig_dyngoal, '-depsc2','-painters', file);
 
 
-figure_cost_stas = figure;
-subplot(2,2,1);
-bar([cost_stats_exp(1),cost_stats_mvn(1),cost_stats_mvp(1), ...
-     cost_stats_m3n(1),cost_stats_m3p(1),cost_stats_m4n(1), ...
-     cost_stats_m4p(1),cost_stats_rs(1),cost_stats_ra(1)], ...
-     'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
-ylabel('k1');
-xticklabels({'a','b','c','d','e','f','t','h','i'});
-subplot(2,2,2);
-bar([cost_stats_exp(2),cost_stats_mvn(2),cost_stats_mvp(2), ...
-     cost_stats_m3n(2),cost_stats_m3p(2),cost_stats_m4n(2), ...
-     cost_stats_m4p(2),cost_stats_rs(2),cost_stats_ra(2)], ...
-     'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
-ylabel('k2');
-xticklabels({'a','b','c','d','e','f','t','h','i'});
-subplot(2,2,3);
-bar([cost_stats_exp(3),cost_stats_mvn(3),cost_stats_mvp(3), ...
-     cost_stats_m3n(3),cost_stats_m3p(3),cost_stats_m4n(3), ...
-     cost_stats_m4p(3),cost_stats_rs(3),cost_stats_ra(3)], ...
-     'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
-ylabel('k3');
-xticklabels({'a','b','c','d','e','f','t','h','i'});
-subplot(2,2,4);
-bar([cost_stats_exp(4) cost_stats_mvn(4),cost_stats_mvp(4), ...
-     cost_stats_m3n(4),cost_stats_m3p(4),cost_stats_m4n(4), ...
-     cost_stats_m4p(4),cost_stats_rs(4),cost_stats_ra(4)], ...
-     'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
-ylabel('k4');
-xticklabels({'a','b','c','d','e','f','t','h','i'});
-
-file = '../../dhri/drafts/onILEQR/figures/simulation_stats.eps';
-set(figure_cost_stas,'PaperPositionMode','auto');
-iptsetpref('ImshowBorder','tight');
-print(figure_cost_stas, '-depsc2','-painters', file);
+% figure_cost_stas = figure;
+% subplot(2,2,1);
+% bar([cost_stats_exp(1),cost_stats_mvn(1),cost_stats_mvp(1), ...
+%      cost_stats_m3n(1),cost_stats_m3p(1),cost_stats_m4n(1), ...
+%      cost_stats_m4p(1),cost_stats_rs(1),cost_stats_ra(1)], ...
+%      'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
+% ylabel('k1');
+% xticklabels({'a','b','c','d','e','f','t','h','i'});
+% subplot(2,2,2);
+% bar([cost_stats_exp(2),cost_stats_mvn(2),cost_stats_mvp(2), ...
+%      cost_stats_m3n(2),cost_stats_m3p(2),cost_stats_m4n(2), ...
+%      cost_stats_m4p(2),cost_stats_rs(2),cost_stats_ra(2)], ...
+%      'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
+% ylabel('k2');
+% xticklabels({'a','b','c','d','e','f','t','h','i'});
+% subplot(2,2,3);
+% bar([cost_stats_exp(3),cost_stats_mvn(3),cost_stats_mvp(3), ...
+%      cost_stats_m3n(3),cost_stats_m3p(3),cost_stats_m4n(3), ...
+%      cost_stats_m4p(3),cost_stats_rs(3),cost_stats_ra(3)], ...
+%      'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
+% ylabel('k3');
+% xticklabels({'a','b','c','d','e','f','t','h','i'});
+% subplot(2,2,4);
+% bar([cost_stats_exp(4) cost_stats_mvn(4),cost_stats_mvp(4), ...
+%      cost_stats_m3n(4),cost_stats_m3p(4),cost_stats_m4n(4), ...
+%      cost_stats_m4p(4),cost_stats_rs(4),cost_stats_ra(4)], ...
+%      'FaceColor',[.5 .5 .5],'EdgeColor',[.5 .5 .5]);
+% ylabel('k4');
+% xticklabels({'a','b','c','d','e','f','t','h','i'});
+% % 
+% file = '../../dhri/drafts/onILEQR/figures/simulation_stats.eps';
+% set(figure_cost_stas,'PaperPositionMode','auto');
+% iptsetpref('ImshowBorder','tight');
+% print(figure_cost_stas, '-depsc2','-painters', file);

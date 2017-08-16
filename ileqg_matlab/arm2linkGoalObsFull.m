@@ -60,7 +60,7 @@ kccOptMeanNVarPVar = ...
                       uMin, uMax, max_iter, plotWithObstacles);
 
 %% Simulate dynamics
-n_sims = 500;
+n_sims = 100;
 idx_rob = 1;
 idx_des = 5;
 idx_obs = 9;
@@ -92,17 +92,17 @@ rob_size = 0.05;
 %% Plot
 
 xmin = -0.2;
-xmax = 0.7;
-ymin = -0.25;
-ymax = 0.5;
+xmax = 0.6;
+ymin = -0.15;
+ymax = 0.45;
 
 fig_pointmass_full  = figure('units','normalized', ...
-                             'outerposition',[0 0 0.26 0.82]);
+                             'outerposition',[0 0 0.28 0.82]);
 
 ax1 = axes('Parent',fig_pointmass_full, ...
-           'Position',[0.13573407202 0.55718206770 0.84072022160 0.43950701675],...
+           'Position',[0.13573407202 0.55718206770 0.82072022160 0.41950701675],...
            'PlotBoxAspectRatio',[1.33333333333333 1 1.66666666666667],...
-           'FontSize',26,...
+           'FontSize',22,...
            'DataAspectRatio',[1 1 1]);
 plot_n_simulations_idx(x_trajs_exp, idx_des, idx_rob, color_goal);
 plot_n_simulations_idx(x_trajs_exp, idx_obs, idx_rob, color_obs);
@@ -117,6 +117,7 @@ box(ax1, 'on');
 grid(ax1, 'on');
 xlabel(ax1, 'ax1');
 ylabel(ax1, 'ay1');
+title('t1');
 
 goal = findobj('Tag','goal');
 obs = findobj('Tag','dynamic obstacle');
@@ -131,9 +132,9 @@ set(legend1,'Location','SouthWest','FontSize',14);
 
 
 ax2 = axes('Parent',fig_pointmass_full, ...
-           'Position',[0.1357340720 0.05123513266 0.8407202216 0.439507016],...
+           'Position',[0.1357340720 0.02123513266 0.8207202216 0.419507016],...
            'PlotBoxAspectRatio',[1.33333333333333 1 1.66666666666667],...
-           'FontSize',26,...
+           'FontSize',22,...
            'DataAspectRatio',[1 1 1]);
 
 plot_n_simulations_idx(x_trajs_mvnp, idx_des, idx_rob, color_goal);
@@ -149,9 +150,10 @@ box(ax2, 'on');
 grid(ax2, 'on');
 xlabel(ax2, 'ax2');
 ylabel(ax2, 'ay2');
+title('t2');
 
 
-file = '../../repositories/dhri/drafts/onILEQR/figures/simulation_arm2linkFull.eps';
+file = '../../../repositories/dhri/drafts/onILEQR/figures/simulation_arm2linkFull.eps';
 set(fig_pointmass_full,'PaperPositionMode','auto');
 iptsetpref('ImshowBorder','tight');
 print(fig_pointmass_full, '-depsc','-painters', file);

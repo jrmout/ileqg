@@ -42,7 +42,7 @@ riskSeekingAverse = ...
                       dt, T, x0, u_exp, uMin, uMax, max_iter);
 
 %% Simulations
-n_sims = 500;
+n_sims = 100;
 idx_rob = 1;
 idx_des = 5;
 idx_obs = 9;

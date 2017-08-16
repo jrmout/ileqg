@@ -74,7 +74,7 @@ overflow = false;
 W = zeros(n,n,kappa,T, S);
 w = zeros(n,kappa,T, S);
 w0 = zeros(kappa,T, S);
-H_s = zeros(n,n,kappa,T-1, S);
+P_s = zeros(n,n,kappa,T-1, S);
 
 W_s = zeros(n,n,kappa,T,S);
 w_s = zeros(n,kappa,T,S);
@@ -93,16 +93,17 @@ for k = T-1:-1:1
             W_s(:,:,j,k+1,s) = W(:,:,j,k+1,s);
             w_s(:,j,k+1,s) = w(:,j,k+1,s);
             w0_s(j,k+1,s) = w0(j,k+1,s);
-            H_s(:,:,j,k,s) = (1/2) * j * W(:,:,j,k+1,s) * Gamma(:,:,k,s) ...
+            P_s(:,:,j,k,s) = j * W(:,:,j,k+1,s) * Gamma(:,:,k,s) ...
                                           * Sigma(:,:,k,s) * Gamma(:,:,k,s)';
 
             % Higher order statistics at time k for uncertainty source s
             if j > 1
                 for rc = 1 : j-1
-                    H_s(:,:,j,k,s) = H_s(:,:,j,k,s) + (j-1) * nchoosek(j-1,rc-1) * W(:,:,rc,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) * Gamma(:,:,k,s)' * H_s(:,:,j-rc,k,s);
-                    W_s(:,:,j,k+1,s) = W_s(:,:,j,k+1,s) + (j-1) * nchoosek(j-1,rc-1) * W(:,:,rc,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) *Gamma(:,:,k,s)' * W_s(:,:,j-rc,k+1,s);
-                    w_s(:,j,k+1,s) = w_s(:,j,k+1,s) + (j-1) * nchoosek(j-1,rc-1) * W(:,:,rc,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) *Gamma(:,:,k,s)' * w_s(:,j-rc,k+1,s);
-                    w0_s(j,k+1,s) = w0_s(j,k+1,s) + (j-1) * nchoosek(j-1,rc-1) * w(:,rc,k+1,s)' * Gamma(:,:,k,s) * Sigma(:,:,k,s) *Gamma(:,:,k,s)' * w_s(:,j-rc,k+1,s);
+                    P_s(:,:,j,k,s) = P_s(:,:,j,k,s) + (j-1) * nchoosek(j-2,rc-1) * W(:,:,rc,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) * Gamma(:,:,k,s)' * P_s(:,:,j-rc,k,s);
+                    W_s(:,:,j,k+1,s) = W_s(:,:,j,k+1,s) + (j-1) * nchoosek(j-2,rc-1) * W(:,:,rc,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) *Gamma(:,:,k,s)' * W_s(:,:,j-rc,k+1,s);
+                    w_s(:,j,k+1,s) = w_s(:,j,k+1,s) + (j-1) * nchoosek(j-2,rc-1) * W(:,:,rc,k+1,s) * Gamma(:,:,k,s) * Sigma(:,:,k,s) *Gamma(:,:,k,s)' * w_s(:,j-rc,k+1,s);
+                    w0_s(j,k+1,s) = w0_s(j,k+1,s) + (j-1) * (nchoosek(j-2,rc-1) * w(:,rc,k+1,s)' * Gamma(:,:,k,s) * Sigma(:,:,k,s) *Gamma(:,:,k,s)' * w_s(:,j-rc,k+1,s)) ...
+                        + trace(sum(P_s(:,:,j-1,k:(T-1),s),4)); %  + sum(trace(P_s(:,:,j,k:(T-1),s)))) ;
                 end
             end
             
@@ -164,7 +165,7 @@ for k = T-1:-1:1
                        L(:,:,k)'*H*L(:,:,k) + L(:,:,k)'*G + G'*L(:,:,k) );
                 w(:,j,k,s) =  A(:,:,k)'*w_s(:,j,k+1,s) + ...
                        L(:,:,k)'*H*l(:,k) + L(:,:,k)'*g + G'*l(:,k);
-                w0(j,k,s) = w0_s(j,k+1,s) + l(:,k)'*H*l(:,k)/2 + l(:,k)'*g + (1/j)*trace(H_s(:,:,j,k,s));
+                w0(j,k,s) = w0_s(j,k+1,s) + l(:,k)'*H*l(:,k)/2 + l(:,k)'*g + (1/j)*trace(P_s(:,:,j,k,s));
             end
             
         end 
@@ -175,7 +176,7 @@ x = zeros(n,T);
 u = zeros(m,T);
 cost = zeros(T);
 cumulants = zeros(kappa,S,T);
-x(:,1) = x0;
+x(:,1) = zeros(size(x0));
 
 % Compute optimal trajectory, control and cost
 for k=1:T-1

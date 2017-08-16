@@ -144,7 +144,7 @@ end
 x = zeros(n,T);
 u = zeros(m,T);
 cost = zeros(T,1);
-x(:,1) = x0;
+x(:,1) = zeros(size(x0));
 
 for k=1:T-1
     u(:,k) = l(:,k) + L(:,:,k)*x(:,k);

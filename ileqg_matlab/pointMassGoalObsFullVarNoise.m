@@ -40,12 +40,12 @@ Gamma(:,:,1) = Gamma1;
 Gamma(:,:,2) = Gamma2;
 dynamicsGamma2 = @(x, u) pointMass_dyngoalobsfullvar_dyn(x, u, Gamma);
 Gamma1(9:12,9:12) = 0.1*eye(4);
-Gamma2(5:8,5:8) = 0.2*eye(4);
+Gamma2(5:8,5:8) = 0.1*eye(4);
 Gamma(:,:,1) = Gamma1;
 Gamma(:,:,2) = Gamma2;
 dynamicsGamma3 = @(x, u) pointMass_dyngoalobsfullvar_dyn(x, u, Gamma);
-Gamma1(9:12,9:12) = 0.01*eye(4);
-Gamma2(5:8,5:8) = 0.01*eye(4);
+Gamma1(9:12,9:12) = 0.001*eye(4);
+Gamma2(5:8,5:8) = 0.001*eye(4);
 Gamma(:,:,1) = Gamma1;
 Gamma(:,:,2) = Gamma2;
 dynamicsGamma4 = @(x, u) pointMass_dyngoalobsfullvar_dyn(x, u, Gamma);
@@ -97,7 +97,7 @@ kccOptMeanNVarPVar = @(lqProb, varargin) ...
                               uMin, uMax, max_iter, plotWithObstacles);
 
 %% Simulate solutions and get statistics
-n_sims = 500;
+n_sims = 50;
 idx_rob = 1;
 idx_des = 5;
 idx_obs = 9;
@@ -184,6 +184,7 @@ box(ax1, 'on');
 grid(ax1, 'on');
 xlabel(ax1, 'ax1');
 ylabel(ax1, 'ay1');
+title('t1');
 
 ax2 = axes('Parent',fig_pointmass_full, ...
     'Position',[0.279488964648537 0.239401496259352 0.2 0.7],...
@@ -203,6 +204,7 @@ set(ax2,'XTick',[0,0.3,0.6,0.9,1.2,1.5]);
 box(ax2, 'on');
 grid(ax2, 'on');
 xlabel(ax2, 'ax2');
+title('t2');
 
 ax3 = axes('Parent',fig_pointmass_full,...
     'Position',[0.509652509652508 0.239401496259352 0.2 0.7],...
@@ -222,6 +224,7 @@ set(ax3,'XTick',[0,0.3,0.6,0.9,1.2,1.5]);
 box(ax3, 'on');
 grid(ax3, 'on');
 xlabel(ax3, 'ax3');
+title('t3');
 
 ax4 = axes('Parent',fig_pointmass_full,...
     'Position',[0.74002574002574 0.239401496259352 0.2 0.7],...
@@ -241,12 +244,13 @@ set(ax4,'XTick',[0,0.3,0.6,0.9,1.2,1.5]);
 box(ax4, 'on');
 grid(ax4, 'on');
 xlabel(ax4, 'ax4');
+title('t4');
 
 legend1 = legend([robot(1) goal(1) obs(1) static_obs(1)], ...
   {'robot','goal', 'dynamicobstacle', 'staticobstaclessssss'});
 set(legend1,'Location','SouthWest','FontSize',12);
 
-file = '../../repositories/dhri/drafts/onILEQR/figures/simulation_pointMassFull_varnoise.eps';
+file = '../../../repositories/dhri/drafts/onILEQR/figures/simulation_pointMassFull_varnoise.eps';
 set(fig_pointmass_full,'PaperPositionMode','auto');
 iptsetpref('ImshowBorder','tight');
 print(fig_pointmass_full, '-depsc','-painters', file);

@@ -46,8 +46,8 @@ for i = 1:T
         pseudoGrad = ((i/plotStep)/nPlots);
         hold on;
         if (i == plotStep)
-            plot(x_goal(1,i), x_goal(2,i), 'o', 'Markersize', 2, 'LineWidth', 5, 'color', black, 'Parent', axes_handle);
-            plot(x_rob(1,i), x_rob(2,i), 'o', 'Markersize', 2, 'LineWidth', 5, 'color', black, 'Parent', axes_handle);
+            plot(x_goal(1,i), x_goal(2,i), 'o', 'Markersize', 0.5, 'LineWidth', 5, 'color', black, 'Parent', axes_handle);
+            plot(x_rob(1,i), x_rob(2,i), 'o', 'Markersize', 0.5, 'LineWidth', 5, 'color', black, 'Parent', axes_handle);
         else
             if (pseudoGrad < 1)
                 [V,D] = eig(L_goal(:,1:2,i));
@@ -59,9 +59,9 @@ for i = 1:T
                     %plot(el1_goal, el2_goal, '-', 'LineWidth', 1, 'color', pseudoGrad*color_goal_gain + (1 - pseudoGrad)*(light_color_goal_gain), 'Tag','gain goal', 'Parent', axes_handle);                
                 end
             end
-            goal = plot(x_goal(1,i), x_goal(2,i), 'o', 'Markersize', 2, 'LineWidth', 5, 'color', pseudoGrad*color_goal + (1 - pseudoGrad)*(light_color_goal), 'Parent', axes_handle);
+            goal = plot(x_goal(1,i), x_goal(2,i), 'o', 'Markersize', 0.5, 'LineWidth', 5, 'color', pseudoGrad*color_goal + (1 - pseudoGrad)*(light_color_goal), 'Parent', axes_handle);
             set(goal, 'Tag','goal');
-            robot = plot(x_rob(1,i), x_rob(2,i), 'o', 'Markersize', 2, 'LineWidth', 5, 'color', pseudoGrad*color_robot + (1 - pseudoGrad)*(light_color_robot), 'Parent', axes_handle);
+            robot = plot(x_rob(1,i), x_rob(2,i), 'o', 'Markersize', 0.5, 'LineWidth', 5, 'color', pseudoGrad*color_robot + (1 - pseudoGrad)*(light_color_robot), 'Parent', axes_handle);
             set(robot, 'Tag','robot');
         end
     end
