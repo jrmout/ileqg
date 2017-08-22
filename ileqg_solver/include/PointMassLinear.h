@@ -11,26 +11,29 @@
 #include "types.h"
 #include <eigen3/Eigen/Dense>
 #include <OCProblemFH.h>
+#include <vector>
 
 namespace ileqg {
 
-class PointMassLinear: public ileqg::OCProblemFH
+class PointMassLinear: public ileqg::SOCProblemFH
 {
 private :
     Matrix A_, B_, A_d_, Q_, Q_f_, R_;                          // State and cost matrices of the full compound state  x = [x_rob ; (x_d - x_rob)]
     Vector x_d_center_;
-
+    std::vector < std::vector <Matrix> > Sigma_;
 
 public :
 
     //Robot linear dynamics A_rob, B_rob and desired trajectory dynamics A_d
     // Q_track and Q_track_f are the weighting for the tracking error (x_d - x_rob)^T Q_track (x_d - x_rob)
-    PointMassLinear(int time_horizon, const Matrix & A_rob, const Matrix & B_rob, const Matrix & A_d, const Vector & x_d_center, const Matrix & Q_track, const Matrix & Q_track_f, const Matrix & R)
-        : OCProblemFH(time_horizon), R_(R) {
-        reset(  A_rob,  B_rob, A_d, x_d_center,  Q_track,  Q_track_f);
+    PointMassLinear(int time_horizon, const Matrix & A_rob, const Matrix & B_rob, const Matrix & A_d, const Vector & x_d_center,
+                    const Matrix & Q_track, const Matrix & Q_track_f, const Matrix & R, const std::vector <std::vector <Matrix> > Sigma )
+        : SOCProblemFH(time_horizon), R_(R) {
+        reset(  A_rob,  B_rob, A_d, x_d_center,  Q_track,  Q_track_f, Sigma);
     }
 
-    void reset(const Matrix & A_rob, const Matrix & B_rob, const Matrix & A_d, const Vector & x_d_center, const Matrix & Q_track, const Matrix & Q_track_f){
+    void reset(const Matrix & A_rob, const Matrix & B_rob, const Matrix & A_d, const Vector & x_d_center,
+               const Matrix & Q_track, const Matrix & Q_track_f, const std::vector <std::vector <Matrix> > Sigma){
 
         size_t x_dim = A_rob.rows()*2;
         size_t u_dim = B_rob.cols();
@@ -49,6 +52,7 @@ public :
 
         A_.topLeftCorner(x_dim/2, x_dim/2) = A_rob;
         A_.bottomLeftCorner(x_dim/2, x_dim/2) = - A_d - A_rob;
+        A_.bottomRightCorner(x_dim/2, x_dim/2) = - A_d;
 
         Q_.bottomRightCorner(x_dim/2, x_dim/2) = Q_track;
 
@@ -58,6 +62,17 @@ public :
         x_d_center_ = x_d_center;
 
         B_ << B_rob , -B_rob;
+
+
+        Sigma_.resize(Sigma.size());
+        for (size_t i=0; i<Sigma.size(); i++) {
+            Sigma_[i].resize(Sigma[i].size());
+             // x_dim,x_dim
+             for (size_t j = 0 ; j < Sigma[i].size(); j++) {
+                 Sigma_[i][j] = Matrix(x_dim,x_dim);
+                 Sigma_[i][j] = Sigma[i][j];
+              }
+        }
     }
 
     // Dynamics
@@ -98,6 +113,12 @@ public :
         q = 2 * Q_f_ * x;
         q_0 = finalCost(x,u);
         return q_0;
+    }
+
+    void linear_dynamics(const Vector & x, const Vector & u, const int & k , Matrix & A, Matrix & B, std::vector<Matrix> & Sigma) {
+        A = A_;
+        B = B_;
+        Sigma = Sigma_[k];
     }
 };
 

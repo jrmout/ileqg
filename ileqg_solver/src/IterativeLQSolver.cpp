@@ -4,10 +4,11 @@
 
 namespace ileqg{
 
-IterativeLQSolver::IterativeLQSolver(int time_horizon, int x_di, int u_di, double sampling_time, std::shared_ptr<OCProblemFH> ocProb, const IterativeLQSolverParams & sparams, const Vector & x_initial, const LQSolution & sol_ini) :
-    lqprob(time_horizon, x_dim, u_dim), nominal(time_horizon, x_dim, u_dim),
-    nominal_new(time_horizon, x_dim, u_dim), deviations(time_horizon, x_dim, u_dim),
-    T(time_horizon), solver_params(sparams), sample_time(sampling_time), x_dim(x_di), u_dim(u_di)
+IterativeLQSolver::IterativeLQSolver(int time_horizon, int x_di, int u_di, double sampling_time, std::shared_ptr<SOCProblemFH> ocProb,
+                                     const IterativeLQSolverParams & sparams, const Vector & x_initial, const LQSolution & sol_ini, std::vector<double> & th) :
+    lqprob(time_horizon, x_di, u_di, th.size()), lqprob_new(time_horizon, x_di, u_di, th.size()), nominal(time_horizon, x_di, u_di),
+    nominal_new(time_horizon, x_di, u_di), deviations(time_horizon, x_di, u_di),
+    T(time_horizon), solver_params(sparams), sample_time(sampling_time), x_dim(x_di), u_dim(u_di) , s_dim(th.size()), theta(th)
 {
     prob = ocProb;
 
@@ -32,8 +33,6 @@ double IterativeLQSolver::solve(LQSolution & sol) {
     epsilon = solver_params.epsilonInit;
 
     for (int iter = 0 ; iter < solver_params.maxIter ; iter ++) {
-        // Simulate system and and approximate LQ problem
-
         if (iter == 0) {
             simulate(nominal);
             cost = overallCost(nominal);
@@ -45,7 +44,7 @@ double IterativeLQSolver::solve(LQSolution & sol) {
         std::cout << "Iteration: " << iter << std::endl;
 
         // Solve local LQ problem and get optimal control deviations
-        LQSolver::solve(lqprob, deviations);
+        LQSolver::solve(lqprob, deviations,theta);
 
         while (true) {
             // Update nominal trajectory performing a line search algorithm
@@ -54,12 +53,14 @@ double IterativeLQSolver::solve(LQSolution & sol) {
                 du = epsilon * deviations.ff[i] + deviations.K[i]*dx;
                 dx = lqprob.A[i]*dx + lqprob.B[i]*du;
                 nominal_new.ff[i] = nominal.ff[i] + du;
+                //std::cout << "Candidate control: " << du << std::endl;
             }
 
             simulate(nominal_new);
             cost_new = overallCost(nominal_new);
-            //std::cout << "Candidate traj: " << nominal_new.x[0] << std::endl << nominal_new.x[1] << std::endl << nominal_new.x[1] << std::endl;
-            //std::cout << "Cost: " << cost  << " , cost_new: " << cost_new << " , epsilon: " << epsilon << std::endl;
+
+            //std::cout << "Candidate traj: " << nominal_new.x[0] << std::endl << nominal_new.x[1] << std::endl << nominal_new.x[2] << std::endl;
+            std::cout << "Cost: " << cost  << " , cost_new: " << cost_new << " , epsilon: " << epsilon << std::endl;
 
             //std::cout << "epsilonMin: " << solver_params.epsilonMin  << " , relConverge: " << solver_params.relConverge << " , maxIter: " << solver_params.maxIter << std::endl;
 
@@ -67,7 +68,6 @@ double IterativeLQSolver::solve(LQSolution & sol) {
                 nominal.ff = nominal_new.ff;
                 nominal.x = nominal_new.x;
                 nominal.K = deviations.K;
-
                 // Reset epsilon for next iteration
                 epsilon = solver_params.epsilonInit;
 
@@ -82,7 +82,7 @@ double IterativeLQSolver::solve(LQSolution & sol) {
                 break;
 
             } else {
-                epsilon = epsilon / 2;
+                epsilon = epsilon / 2.0;
 
                 if (epsilon < solver_params.epsilonMin) {
                     std::cout << "Converged through epsilonMin" << std::endl;
@@ -98,7 +98,8 @@ double IterativeLQSolver::solve(LQSolution & sol) {
     sol.K = nominal.K;
 
     std::cout << "Final cost: " << cost<< std::endl;
-    //std::cout << "Final traj: " << nominal.x[0] << std::endl << nominal.x[1] << std::endl << nominal.x[2] << std::endl;
+    std::cout << "Final traj: " << nominal.x[0] << std::endl << nominal.x[1] << std::endl << nominal.x[2] << std::endl;
+    std::cout << "Final control: " << nominal.ff[0] << std::endl << nominal.ff[1] << std::endl << nominal.ff[2] << std::endl;
     return cost;
 }
 
@@ -118,12 +119,17 @@ void IterativeLQSolver::simulate(LQSolution & x_u_traj) {
 // LQ approximation around the given nominal trajectory of states and controls x_u_traj
 void IterativeLQSolver::approximate(LQSolution & x_u_traj, LQProblem & lqproblem) {
     Matrix f_dx(x_dim, x_dim), f_du(x_dim, u_dim);
+    std::vector<Matrix> f_dw;
 
     for (size_t i = 0; i < T-1 ; i ++) {
         // Simulate dynamics with Euler + first-order approximation
-        prob->dynamics(x_u_traj.x[i], x_u_traj.ff[i], f_dx, f_du);
+        prob->linear_dynamics(x_u_traj.x[i], x_u_traj.ff[i], i, f_dx, f_du, f_dw);     //vector Sigma
         lqproblem.A[i] = Matrix::Identity(x_dim, x_dim) + sample_time * f_dx;
         lqproblem.B[i] = sample_time * f_du;
+
+        for (int j = 0; j < s_dim; j++) {
+            lqproblem.Sigma[i][j] = sqrt(sample_time) * f_dw[j];
+        }
 
         // Cost-to-go + quadratic approximation
         prob->cost(x_u_traj.x[i],x_u_traj.ff[i], i, lqproblem.q0[i], lqproblem.q[i], lqproblem.r[i], lqproblem.Q[i], lqproblem.R[i]);

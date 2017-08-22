@@ -40,6 +40,19 @@ public :
     virtual double finalCost(const Vector & x, const Vector & u, double & q_0, Vector & q, Matrix & Q) = 0;
 };
 
+
+class SOCProblemFH : public OCProblemFH
+{
+protected :
+    SOCProblemFH(int time_horizon) : OCProblemFH (time_horizon) {}
+
+public :
+
+    // Dynamics with 1st order state and control derivatives
+    virtual void linear_dynamics(const Vector & x, const Vector & u, const int & k, Matrix & A, Matrix & B,  std::vector<Matrix> & Sigma) = 0;
+};
+
+
 }
 
 
